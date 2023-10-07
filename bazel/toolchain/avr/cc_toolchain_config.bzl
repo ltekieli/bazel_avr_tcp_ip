@@ -49,8 +49,8 @@ def _impl(ctx):
         ),
     ]
 
-    cpp_compile_action = action_config(
-        action_name = ACTION_NAMES.cpp_compile,
+    c_compile_action = action_config(
+        action_name = ACTION_NAMES.c_compile,
         tools = [
             tool(
                 path = "wrappers/avr-gcc",
@@ -90,7 +90,7 @@ def _impl(ctx):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [ACTION_NAMES.cpp_compile],
+                actions = [ACTION_NAMES.c_compile],
                 flag_groups = [
                     #
                     # Compile only.
@@ -98,14 +98,6 @@ def _impl(ctx):
                     flag_group(
                         flags = [
                             "-c",
-                        ],
-                    ),
-                    #
-                    # Use C++.
-                    #
-                    flag_group(
-                        flags = [
-                            "-xc++",
                         ],
                     ),
                     #
@@ -180,7 +172,7 @@ def _impl(ctx):
         flag_sets = [
             flag_set(
                 actions = [
-                    ACTION_NAMES.cpp_compile,
+                    ACTION_NAMES.c_compile,
                     ACTION_NAMES.cpp_link_executable,
                 ],
                 flag_groups = [
@@ -204,7 +196,7 @@ def _impl(ctx):
         flag_sets = [
             flag_set(
                 actions = [
-                    ACTION_NAMES.cpp_compile,
+                    ACTION_NAMES.c_compile,
                     ACTION_NAMES.cpp_link_executable,
                 ],
                 flag_groups = [
@@ -313,7 +305,7 @@ def _impl(ctx):
     no_legacy_features = feature(name = "no_legacy_features")
 
     action_configs = [
-        cpp_compile_action,
+        c_compile_action,
         cpp_link_executable_action,
         cpp_link_static_library_action,
         strip_action,

@@ -2,7 +2,7 @@
 
 ## Building
 ```
-$ bazel build -s --config=avr //:blink_firmware
+$ bazel build -s --config=avr //:ethernet_firmware
 ```
 
 ## Flashing
