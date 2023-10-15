@@ -1,5 +1,6 @@
 #include "enc28j60.h"
 
+#include "delay.h"
 #include "spi.h"
 
 //
@@ -48,9 +49,38 @@
 #define ENC28J60_ECON1_BSEL0    0x01
 
 //
+// Bank 2 registers
+//
+#define ENC28J60_BANK2_MICMD    (ENC28J60_MII_REGISTER | ENC28J60_BANK2 | 0x12)
+#define ENC28J60_BANK2_MICMD_MIIRD 0x01
+
+#define ENC28J60_BANK2_MIREGADR (ENC28J60_MII_REGISTER | ENC28J60_BANK2 | 0x14)
+#define ENC28J60_BANK2_MIRDL    (ENC28J60_MII_REGISTER | ENC28J60_BANK2 | 0x18)
+#define ENC28J60_BANK2_MIRDH    (ENC28J60_MII_REGISTER | ENC28J60_BANK2 | 0x19)
+
+//
 // Bank 3 registers
 //
+#define ENC28J60_BANK3_MISTAT (ENC28J60_ETH_REGISTER | ENC28J60_BANK3 | 0x0A)
+#define ENC28J60_BANK3_MISTAT_BUSY 0x01
+
 #define ENC28J60_BANK3_EREVID (ENC28J60_ETH_REGISTER | ENC28J60_BANK3 | 0x12)
+
+//
+// PHY 16 bit registers
+//
+#define ENC28J60_PHY_PHCON1    0x00
+#define ENC28J60_PHY_PHSTAT1   0x01
+#define ENC28J60_PHY_PHHID1    0x02
+#define ENC28J60_PHY_PHHID2    0x03
+#define ENC28J60_PHY_PHCON2    0x10
+
+#define ENC28J60_PHY_PHSTAT2   0x11
+#define ENC28J60_PHY_PHSTAT2_LSTAT   0x0400
+
+#define ENC28J60_PHY_PHIE      0x12
+#define ENC28J60_PHY_PHIR      0x13
+#define ENC28J60_PHY_PHLCON    0x14
 
 static uint8_t enc28j60_get_address_from_register(uint8_t reg)
 {
@@ -112,6 +142,29 @@ static uint8_t enc28j60_read_register(uint8_t reg)
     return enc28j60_spi_read(ENC28J60_SPI_RCR, reg);
 }
 
+static void enc28j60_write_register(uint8_t reg, uint8_t data)
+{
+    enc28j60_select_bank(reg);
+    enc28j60_spi_write(ENC28J60_SPI_WCR, reg, data);
+}
+
+static uint16_t enc28j60_read_phy_register(uint8_t reg)
+{
+    enc28j60_write_register(ENC28J60_BANK2_MIREGADR, reg);
+    enc28j60_write_register(ENC28J60_BANK2_MICMD, ENC28J60_BANK2_MICMD_MIIRD);
+
+    delay_us(15);
+
+    while(enc28j60_read_register(ENC28J60_BANK3_MISTAT) & ENC28J60_BANK3_MISTAT_BUSY);
+
+    enc28j60_write_register(ENC28J60_BANK2_MICMD, ENC28J60_BANK2_MICMD_MIIRD & 0x00);
+
+    uint16_t mirdh = enc28j60_read_register(ENC28J60_BANK2_MIRDH);
+    uint16_t mirdl = enc28j60_read_register(ENC28J60_BANK2_MIRDL);
+
+    return (mirdh << 8) | mirdl;
+}
+
 void enc28j60_soft_reset()
 {
     enc28j60_spi_write(ENC28J60_SPI_SRC, 0x0, ENC28J60_SPI_SRC);
@@ -120,6 +173,10 @@ void enc28j60_soft_reset()
 uint8_t enc28j60_read_revision()
 {
     return enc28j60_read_register(ENC28J60_BANK3_EREVID);
+}
+
+uint8_t enc28j60_read_link_status() {
+    return (enc28j60_read_phy_register(ENC28J60_PHY_PHSTAT2) & ENC28J60_PHY_PHSTAT2_LSTAT) != 0;
 }
 
 void enc28j60_init()

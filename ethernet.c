@@ -23,7 +23,8 @@ int main()
     for (;;)
     {
         log_info("Is alive!");
-        log_info_fmt("ENC28J60 revision: %d", enc28j60_read_revision());
+        log_info_fmt("[ENC28J60] revision: %d", enc28j60_read_revision());
+        log_info_fmt("[ENC28J60] link status: %d", enc28j60_read_link_status());
         delay_ms(1000);
     }
 }

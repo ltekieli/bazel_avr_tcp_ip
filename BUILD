@@ -35,6 +35,7 @@ cc_library(
     srcs = ["enc28j60.c"],
     hdrs = ["enc28j60.h"],
     deps = [
+        ":delay",
         ":spi"
     ],
 )
