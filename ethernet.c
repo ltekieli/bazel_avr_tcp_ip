@@ -25,6 +25,10 @@ int main()
         log_info("Is alive!");
         log_info_fmt("[ENC28J60] revision: %d", enc28j60_read_revision());
         log_info_fmt("[ENC28J60] link status: %d", enc28j60_read_link_status());
+        log_info_fmt("[ENC28J60] rx start: %04x", enc28j60_read_rx_buffer_start());
+        log_info_fmt("[ENC28J60] rx end: %04x", enc28j60_read_rx_buffer_end());
+        log_info_fmt("[ENC28J60] tx start: %04x", enc28j60_read_tx_buffer_start());
+        log_info_fmt("[ENC28J60] tx end: %04x", enc28j60_read_tx_buffer_end());
         delay_ms(1000);
     }
 }

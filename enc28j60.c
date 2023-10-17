@@ -49,6 +49,20 @@
 #define ENC28J60_ECON1_BSEL0    0x01
 
 //
+// Bank 0 registers
+//
+#define ENC28J60_BANK0_ETXSTL   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x04)
+#define ENC28J60_BANK0_ETXSTH   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x05)
+#define ENC28J60_BANK0_ETXNDL   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x06)
+#define ENC28J60_BANK0_ETXNDH   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x07)
+#define ENC28J60_BANK0_ERXSTL   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x08)
+#define ENC28J60_BANK0_ERXSTH   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x09)
+#define ENC28J60_BANK0_ERXNDL   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x0A)
+#define ENC28J60_BANK0_ERXNDH   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x0B)
+#define ENC28J60_BANK0_ERXRDPTL (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x0C)
+#define ENC28J60_BANK0_ERXRDPTH (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x0D)
+
+//
 // Bank 2 registers
 //
 #define ENC28J60_BANK2_MICMD    (ENC28J60_MII_REGISTER | ENC28J60_BANK2 | 0x12)
@@ -175,11 +189,76 @@ uint8_t enc28j60_read_revision()
     return enc28j60_read_register(ENC28J60_BANK3_EREVID);
 }
 
-uint8_t enc28j60_read_link_status() {
+uint8_t enc28j60_read_link_status()
+{
     return (enc28j60_read_phy_register(ENC28J60_PHY_PHSTAT2) & ENC28J60_PHY_PHSTAT2_LSTAT) != 0;
+}
+
+void enc28j60_setup_rx_buffer(uint16_t start, uint16_t size)
+{
+    uint16_t end = start + size - 1;
+
+    uint8_t startl = start & 0xFF;
+    uint8_t starth = start >> 8;
+    uint8_t endl = end & 0xFF;
+    uint8_t endh = end >> 8;
+
+    enc28j60_write_register(ENC28J60_BANK0_ERXSTL, startl);
+    enc28j60_write_register(ENC28J60_BANK0_ERXSTH, starth);
+    enc28j60_write_register(ENC28J60_BANK0_ERXNDL, endl);
+    enc28j60_write_register(ENC28J60_BANK0_ERXNDH, endh);
+
+    enc28j60_write_register(ENC28J60_BANK0_ERXRDPTL, startl);
+    enc28j60_write_register(ENC28J60_BANK0_ERXRDPTH, starth);
+}
+
+void enc28j60_setup_tx_buffer(uint16_t start, uint16_t size)
+{
+    uint16_t end = start + size - 1;
+
+    uint8_t startl = start & 0xFF;
+    uint8_t starth = start >> 8;
+    uint8_t endl = end & 0xFF;
+    uint8_t endh = end >> 8;
+
+    enc28j60_write_register(ENC28J60_BANK0_ETXSTL, startl);
+    enc28j60_write_register(ENC28J60_BANK0_ETXSTH, starth);
+    enc28j60_write_register(ENC28J60_BANK0_ETXNDL, endl);
+    enc28j60_write_register(ENC28J60_BANK0_ETXNDH, endh);
+}
+
+uint16_t enc28j60_read_rx_buffer_start()
+{
+    uint16_t startl = enc28j60_read_register(ENC28J60_BANK0_ERXSTL);
+    uint16_t starth = enc28j60_read_register(ENC28J60_BANK0_ERXSTH);
+    return (starth << 8) | startl;
+}
+
+uint16_t enc28j60_read_rx_buffer_end()
+{
+    uint16_t endl = enc28j60_read_register(ENC28J60_BANK0_ERXNDL);
+    uint16_t endh = enc28j60_read_register(ENC28J60_BANK0_ERXNDH);
+    return (endh << 8) | endl;
+}
+
+uint16_t enc28j60_read_tx_buffer_start()
+{
+    uint16_t startl = enc28j60_read_register(ENC28J60_BANK0_ETXSTL);
+    uint16_t starth = enc28j60_read_register(ENC28J60_BANK0_ETXSTH);
+    return (starth << 8) | startl;
+}
+
+uint16_t enc28j60_read_tx_buffer_end()
+{
+    uint16_t endl = enc28j60_read_register(ENC28J60_BANK0_ETXNDL);
+    uint16_t endh = enc28j60_read_register(ENC28J60_BANK0_ETXNDH);
+    return (endh << 8) | endl;
 }
 
 void enc28j60_init()
 {
     enc28j60_soft_reset();
+    delay_ms(500);
+    enc28j60_setup_tx_buffer(0x0000, 0x0600);
+    enc28j60_setup_rx_buffer(0x0600, 0x1A00);
 }
