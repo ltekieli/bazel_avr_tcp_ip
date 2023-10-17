@@ -14,4 +14,6 @@ uint16_t enc28j60_read_tx_buffer_start();
 
 uint16_t enc28j60_read_tx_buffer_end();
 
+uint8_t enc28j60_read_receive_filters();
+
 void enc28j60_init();

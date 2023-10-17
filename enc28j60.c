@@ -44,6 +44,8 @@
 //
 // Common registers available in any bank
 //
+#define ENC28J60_ESTAT          0x1D
+#define ENC28J60_ESTAT_CLKRDY   0x01
 #define ENC28J60_ECON1          0x1F
 #define ENC28J60_ECON1_BSEL1    0x02
 #define ENC28J60_ECON1_BSEL0    0x01
@@ -61,6 +63,14 @@
 #define ENC28J60_BANK0_ERXNDH   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x0B)
 #define ENC28J60_BANK0_ERXRDPTL (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x0C)
 #define ENC28J60_BANK0_ERXRDPTH (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x0D)
+
+//
+// Bank 1 registers
+//
+#define ENC28J60_BANK1_ERXFCON (ENC28J60_ETH_REGISTER | ENC28J60_BANK1 | 0x18)
+#define ENC28J60_BANK1_ERXFCON_PMEN     0x05
+#define ENC28J60_BANK1_ERXFCON_CRCEN    0x06
+#define ENC28J60_BANK1_ERXFCON_UCEN     0x08
 
 //
 // Bank 2 registers
@@ -255,10 +265,21 @@ uint16_t enc28j60_read_tx_buffer_end()
     return (endh << 8) | endl;
 }
 
+uint8_t enc28j60_read_receive_filters()
+{
+    return enc28j60_read_register(ENC28J60_BANK1_ERXFCON);
+}
+
+uint8_t enc28j60_clock_ready()
+{
+    return enc28j60_read_register(ENC28J60_ESTAT) & ENC28J60_ESTAT_CLKRDY != 0;
+}
+
 void enc28j60_init()
 {
     enc28j60_soft_reset();
-    delay_ms(500);
     enc28j60_setup_tx_buffer(0x0000, 0x0600);
     enc28j60_setup_rx_buffer(0x0600, 0x1A00);
+
+    while(!enc28j60_clock_ready());
 }

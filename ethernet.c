@@ -14,9 +14,13 @@ int main()
     timer_init();
     uart_init();
     log_uart_init();
+    log_info("Logging initialzed!");
 
     spi_init();
+    log_info("SPI initialzed!");
+
     enc28j60_init();
+    log_info("ENC28J60 initialzed!");
 
     sei();
 
@@ -29,6 +33,8 @@ int main()
         log_info_fmt("[ENC28J60] rx end: %04x", enc28j60_read_rx_buffer_end());
         log_info_fmt("[ENC28J60] tx start: %04x", enc28j60_read_tx_buffer_start());
         log_info_fmt("[ENC28J60] tx end: %04x", enc28j60_read_tx_buffer_end());
+        log_info_fmt("[ENC28J60] receive filters: %02x", enc28j60_read_receive_filters());
+
         delay_ms(1000);
     }
 }
