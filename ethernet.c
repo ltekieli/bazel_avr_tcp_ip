@@ -34,6 +34,8 @@ int main()
         log_info_fmt("[ENC28J60] tx start: %04x", enc28j60_read_tx_buffer_start());
         log_info_fmt("[ENC28J60] tx end: %04x", enc28j60_read_tx_buffer_end());
         log_info_fmt("[ENC28J60] receive filters: %02x", enc28j60_read_receive_filters());
+        log_info_fmt("[ENC28J60] has rx packet: %d", enc28j60_has_rx_packet());
+        log_info_fmt("[ENC28J60] rx packet count: %d", enc28j60_rx_packet_count());
 
         delay_ms(1000);
     }

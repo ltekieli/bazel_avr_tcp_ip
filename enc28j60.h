@@ -16,4 +16,8 @@ uint16_t enc28j60_read_tx_buffer_end();
 
 uint8_t enc28j60_read_receive_filters();
 
+uint8_t enc28j60_has_rx_packet();
+
+uint8_t enc28j60_rx_packet_count();
+
 void enc28j60_init();
