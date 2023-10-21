@@ -1,7 +1,8 @@
 #include "enc28j60.h"
 
-#include "delay.h"
 #include "spi.h"
+
+#include <util/delay.h>
 
 //
 // SPI operations
@@ -44,16 +45,26 @@
 //
 // Common registers available in any bank
 //
+#define ENC28J60_EIR            0x1C
+#define ENC28J60_EIR_TXERIF     0x02
 #define ENC28J60_ESTAT          0x1D
 #define ENC28J60_ESTAT_CLKRDY   0x01
+#define ENC28J60_ECON2          0x1E
+#define ENC28J60_ECON2_PKTDEC   0x40
 #define ENC28J60_ECON1          0x1F
 #define ENC28J60_ECON1_BSEL0    0x01
 #define ENC28J60_ECON1_BSEL1    0x02
 #define ENC28J60_ECON1_RXEN     0x04
+#define ENC28J60_ECON1_TXRTS    0x08
+#define ENC28J60_ECON1_TXRST    0x80
 
 //
 // Bank 0 registers
 //
+#define ENC28J60_BANK0_ERDPTL   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x00)
+#define ENC28J60_BANK0_ERDPTH   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x01)
+#define ENC28J60_BANK0_EWRPTL   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x02)
+#define ENC28J60_BANK0_EWRPTH   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x03)
 #define ENC28J60_BANK0_ETXSTL   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x04)
 #define ENC28J60_BANK0_ETXSTH   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x05)
 #define ENC28J60_BANK0_ETXNDL   (ENC28J60_ETH_REGISTER | ENC28J60_BANK0 | 0x06)
@@ -153,7 +164,8 @@ static uint8_t enc28j60_spi_read(uint8_t opcode, uint8_t reg)
     // Single read for ETH registers
     uint8_t result = spi_masterTxRx(0x00);
 
-    if (enc28j60_get_type_from_register(reg) != ENC28J60_ETH_REGISTER) {
+    if (enc28j60_get_type_from_register(reg) != ENC28J60_ETH_REGISTER)
+    {
         // Double read for MAC nad MII registers
         // First byte read is dummy
         result = spi_masterTxRx(0x00);
@@ -175,6 +187,46 @@ static void enc28j60_spi_write(uint8_t opcode, uint8_t reg, uint8_t data)
     spi_masterTxRx(data);
 
     spi_chip_deselect();
+}
+
+static void enc28j60_spi_read_buffer_memory(uint8_t* data, uint16_t size)
+{
+    spi_chip_select();
+
+    spi_masterTxRx(ENC28J60_SPI_RBM);
+
+    for (uint16_t i = 0; i < size; ++i)
+    {
+        *data = spi_masterTxRx(0x00);
+        ++data;
+    }
+
+    spi_chip_deselect();
+}
+
+static void enc28j60_spi_write_buffer_memory(uint8_t* data, uint16_t size)
+{
+    spi_chip_select();
+
+    spi_masterTxRx(ENC28J60_SPI_WBM);
+
+    for (uint16_t i = 0; i < size; ++i)
+    {
+        spi_masterTxRx(*data);
+        ++data;
+    }
+
+    spi_chip_deselect();
+}
+
+static uint8_t enc28j60_spi_read_buffer_memory_byte()
+{
+    return enc28j60_spi_read(ENC28J60_SPI_RBM, 0);
+}
+
+static void enc28j60_spi_write_buffer_memory_byte(uint8_t data)
+{
+    enc28j60_spi_write(ENC28J60_SPI_WBM, 0, data);
 }
 
 static void enc28j60_select_bank(uint8_t reg)
@@ -200,7 +252,7 @@ static uint16_t enc28j60_read_phy_register(uint8_t reg)
     enc28j60_write_register(ENC28J60_BANK2_MIREGADR, reg);
     enc28j60_write_register(ENC28J60_BANK2_MICMD, ENC28J60_BANK2_MICMD_MIIRD);
 
-    delay_us(15);
+    _delay_us(11);
 
     while(enc28j60_read_register(ENC28J60_BANK3_MISTAT) & ENC28J60_BANK3_MISTAT_BUSY);
 
@@ -253,6 +305,9 @@ void enc28j60_setup_rx_buffer(uint16_t start, uint16_t size)
     enc28j60_write_register(ENC28J60_BANK0_ERXSTH, starth);
     enc28j60_write_register(ENC28J60_BANK0_ERXNDL, endl);
     enc28j60_write_register(ENC28J60_BANK0_ERXNDH, endh);
+
+    enc28j60_write_register(ENC28J60_BANK0_ERDPTL, startl);
+    enc28j60_write_register(ENC28J60_BANK0_ERDPTH, starth);
 
     enc28j60_write_register(ENC28J60_BANK0_ERXRDPTL, startl);
     enc28j60_write_register(ENC28J60_BANK0_ERXRDPTH, starth);
@@ -311,21 +366,98 @@ uint8_t enc28j60_clock_ready()
     return enc28j60_read_register(ENC28J60_ESTAT) & ENC28J60_ESTAT_CLKRDY != 0;
 }
 
-uint8_t enc28j60_has_rx_packet()
-{
-    return enc28j60_read_register(ENC28J60_BANK1_EPKTCNT) != 0;
-}
-
 uint8_t enc28j60_rx_packet_count()
 {
     return enc28j60_read_register(ENC28J60_BANK1_EPKTCNT);
 }
 
+uint16_t enc28j60_rx_packet_receive(uint8_t* packet, uint16_t max_size)
+{
+    uint16_t next_packet = 0;
+    uint16_t size = 0;
+    uint16_t status = 0;
+
+    uint16_t next_packet_l = enc28j60_spi_read_buffer_memory_byte();
+    uint16_t next_packet_h = enc28j60_spi_read_buffer_memory_byte();
+
+    next_packet = (next_packet_h << 8) | next_packet_l;
+
+    uint16_t size_l = enc28j60_spi_read_buffer_memory_byte();
+    uint16_t size_h = enc28j60_spi_read_buffer_memory_byte();
+
+    // Here the size represents:
+    //     actual_packet_size + padding + 4_bytes_crc
+    size = (size_h << 8) | size_l;
+
+    // Ignore the CRC
+    size = size - 4;
+
+    uint16_t status_l = enc28j60_spi_read_buffer_memory_byte();
+    uint16_t status_h = enc28j60_spi_read_buffer_memory_byte();
+
+    status = (status_h << 8) | status_l;
+
+    if ((status & 0x0080) != 0)
+    {
+        // Receive ok
+        enc28j60_spi_read_buffer_memory(packet, size);
+    } else
+    {
+        size = 0;
+    }
+
+    enc28j60_write_register(ENC28J60_BANK0_ERDPTL, next_packet_l);
+    enc28j60_write_register(ENC28J60_BANK0_ERDPTH, next_packet_h);
+
+    enc28j60_write_register(ENC28J60_BANK0_ERXRDPTL, next_packet_l);
+    enc28j60_write_register(ENC28J60_BANK0_ERXRDPTH, next_packet_h);
+
+    enc28j60_spi_write(ENC28J60_SPI_BFS, ENC28J60_ECON2, ENC28J60_ECON2_PKTDEC);
+
+    return size;
+}
+
+void enc28j60_tx_packet_send(uint8_t* packet, uint16_t size)
+{
+    while (enc28j60_read_register(ENC28J60_ECON1) & ENC28J60_ECON1_TXRTS != 0)
+    {
+        if (enc28j60_read_register(ENC28J60_EIR) & ENC28J60_EIR_TXERIF != 0)
+        {
+            enc28j60_spi_write(ENC28J60_SPI_BFS, ENC28J60_ECON1, ENC28J60_ECON1_TXRST);
+            enc28j60_spi_write(ENC28J60_SPI_BFC, ENC28J60_ECON1, ENC28J60_ECON1_TXRST);
+        }
+    }
+
+    // Set the write pointer
+    uint8_t startl = (0x0000) & 0xFF;
+    uint8_t starth = (0x0000) >> 8;
+    enc28j60_write_register(ENC28J60_BANK0_EWRPTL, startl);
+    enc28j60_write_register(ENC28J60_BANK0_EWRPTH, starth);
+
+    // Set the end of the tx buffer
+    uint8_t endl = (0x0000 + size) & 0xFF;
+    uint8_t endh = (0x0000 + size) >> 8;
+    enc28j60_write_register(ENC28J60_BANK0_ETXNDL, endl);
+    enc28j60_write_register(ENC28J60_BANK0_ETXNDH, endh);
+
+    // Write the control byte
+    enc28j60_spi_write_buffer_memory_byte(0x00);
+
+    // Write the packet
+    enc28j60_spi_write_buffer_memory(packet, size);
+
+    // Transmit
+    enc28j60_spi_write(ENC28J60_SPI_BFS, ENC28J60_ECON1, ENC28J60_ECON1_TXRTS);
+}
+
 void enc28j60_init()
 {
     enc28j60_soft_reset();
-    enc28j60_setup_tx_buffer(0x0000, 0x0600);
-    enc28j60_setup_rx_buffer(0x0600, 0x1A00);
+
+    _delay_us(100);
+
+    enc28j60_setup_tx_buffer(0x0000, 0x0800);
+    enc28j60_setup_rx_buffer(0x0800, 0x1800);
 
     while(!enc28j60_clock_ready());
 
