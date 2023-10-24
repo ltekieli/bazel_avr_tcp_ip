@@ -1,3 +1,5 @@
+package(default_visibility = ["//visibility:public"])
+
 load("//bazel/rules/cc:cc_firmware.bzl", "cc_firmware")
 
 cc_library(
@@ -52,6 +54,7 @@ cc_binary(
         "ethernet.c",
     ],
     deps = [
+        "//uip:uip",
         ":delay",
         ":enc28j60",
         ":log",

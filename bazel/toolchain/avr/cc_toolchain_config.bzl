@@ -151,6 +151,24 @@ def _impl(ctx):
                         ],
                     ),
                     #
+                    # Add include paths.
+                    #
+                    flag_group(
+                        iterate_over = "include_paths",
+                        flags = [
+                            "-I%{include_paths}",
+                        ],
+                    ),
+                    #
+                    # Add quote include paths.
+                    #
+                    flag_group(
+                        iterate_over = "quote_include_paths",
+                        flags = [
+                            "-I%{quote_include_paths}",
+                        ],
+                    ),
+                    #
                     # Use input file and declare output file.
                     #
                     flag_group(
