@@ -26,11 +26,11 @@ cc_library(
     name = "log",
     srcs = ["log.c"],
     hdrs = ["log.h"],
+    defines = ["ENABLE_LOGGING=1"],
     deps = [
         ":timer",
         ":uart",
     ],
-    defines = ["ENABLE_LOGGING=1"],
 )
 
 cc_library(
@@ -39,7 +39,7 @@ cc_library(
     hdrs = ["enc28j60.h"],
     deps = [
         ":delay",
-        ":spi"
+        ":spi",
     ],
 )
 
@@ -55,13 +55,13 @@ cc_binary(
         "ethernet.c",
     ],
     deps = [
-        "//uip:uip",
         ":delay",
         ":enc28j60",
         ":log",
         ":spi",
         ":timer",
         ":uart",
+        "//uip",
     ],
 )
 
