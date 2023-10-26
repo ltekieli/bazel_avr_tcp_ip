@@ -29,7 +29,8 @@ cc_library(
     deps = [
         ":timer",
         ":uart",
-    ]
+    ],
+    defines = ["ENABLE_LOGGING=1"],
 )
 
 cc_library(
