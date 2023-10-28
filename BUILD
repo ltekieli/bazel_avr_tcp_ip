@@ -2,18 +2,20 @@ package(default_visibility = ["//visibility:public"])
 
 load("//bazel/rules/cc:cc_firmware.bzl", "cc_firmware")
 
+CPU_FREQ = "F_CPU=16000000UL"
+
 cc_library(
     name = "delay",
     srcs = ["delay.c"],
     hdrs = ["delay.h"],
-    defines = ["F_CPU=16000000UL"],
+    defines = [CPU_FREQ],
 )
 
 cc_library(
     name = "uart",
     srcs = ["uart.c"],
     hdrs = ["uart.h"],
-    defines = ["F_CPU=16000000UL"],
+    local_defines = [CPU_FREQ],
 )
 
 cc_library(
