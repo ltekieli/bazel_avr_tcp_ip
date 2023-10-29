@@ -14,8 +14,11 @@ void spi_init()
     // set CS, MOSI and SCK to output
     SPI_DDR |= (1 << CS) | (1 << MOSI) | (1 << SCK);
 
-    // enable SPI, set as master, Fosc / 128 (slowest)
-    SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR1) | (1 << SPR0);
+    // enable SPI, set as master
+    SPCR = (1 << SPE) | (1 << MSTR);
+
+    // F_osc / 16
+    SPCR |= (0 << SPR1) | (1 << SPR0);
 }
 
 void spi_chip_select()
