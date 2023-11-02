@@ -17,8 +17,9 @@ void spi_init()
     // enable SPI, set as master
     SPCR = (1 << SPE) | (1 << MSTR);
 
-    // F_osc / 16
-    SPCR |= (0 << SPR1) | (1 << SPR0);
+    // F_osc / 2
+    SPCR |= (0 << SPR1) | (0 << SPR0);
+    SPSR |= (1 << SPI2X);
 }
 
 void spi_chip_select()

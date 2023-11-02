@@ -72,6 +72,8 @@ int main()
     uip_ipaddr(ipaddr, 255,255,255,0);
     uip_setnetmask(ipaddr);
 
+    uip_arp_init();
+
     hello_world_init();
 
     sei();
