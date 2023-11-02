@@ -1,4 +1,3 @@
-#include "delay.h"
 #include "enc28j60.h"
 #include "log.h"
 #include "spi.h"
