@@ -90,7 +90,7 @@ cc_library(
 cc_binary(
     name = "ethernet",
     srcs = [
-        "ethernet.c",
+        "main.c",
     ],
     deps = [
         ":delay",
