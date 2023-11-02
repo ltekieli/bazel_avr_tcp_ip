@@ -1,9 +1,37 @@
 package(default_visibility = ["//visibility:public"])
 
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//bazel/rules/cc:cc_firmware.bzl", "cc_firmware")
 
+##############################################################################
+#
+# Feature flags
+#
+##############################################################################
+config_setting(
+    name = "config_enable_logging",
+    flag_values = {
+        ":enable_logging": "true",
+    },
+)
+
+bool_flag(
+    name = "enable_logging",
+    build_setting_default = False,
+)
+
+##############################################################################
+#
+# Constants
+#
+##############################################################################
 CPU_FREQ = "F_CPU=16000000UL"
 
+##############################################################################
+#
+# Libraries
+#
+##############################################################################
 cc_library(
     name = "delay",
     srcs = ["delay.c"],
@@ -28,7 +56,10 @@ cc_library(
     name = "log",
     srcs = ["log.c"],
     hdrs = ["log.h"],
-    defines = ["ENABLE_LOGGING=1"],
+    defines = select({
+        ":config_enable_logging": ["ENABLE_LOGGING=1"],
+        "//conditions:default": [],
+    }),
     deps = [
         ":timer",
         ":uart",
@@ -51,6 +82,11 @@ cc_library(
     hdrs = ["spi.h"],
 )
 
+##############################################################################
+#
+# Firmware
+#
+##############################################################################
 cc_binary(
     name = "ethernet",
     srcs = [

@@ -96,7 +96,8 @@ int main()
             uip_len = enc28j60_rx_packet_receive(uip_buf, UIP_BUFSIZE);
             LOG_INFO_FMT("[ENC28J60] received packet size: %d", uip_len);
             dump_packet(uip_buf, uip_len);
-        } else {
+        } else
+        {
             uip_len = 0;
         }
 
