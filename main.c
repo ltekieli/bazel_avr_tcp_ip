@@ -14,17 +14,6 @@
 // Interpret the uIP data buffer as ethernet header
 #define BUF ((struct uip_eth_hdr*)&uip_buf[0])
 
-void print_configuration()
-{
-    LOG_INFO_FMT("[ENC28J60] revision: %d", enc28j60_read_revision());
-    LOG_INFO_FMT("[ENC28J60] link status: %d", enc28j60_read_link_status());
-    LOG_INFO_FMT("[ENC28J60] rx start: %04x", enc28j60_read_rx_buffer_start());
-    LOG_INFO_FMT("[ENC28J60] rx end: %04x", enc28j60_read_rx_buffer_end());
-    LOG_INFO_FMT("[ENC28J60] tx start: %04x", enc28j60_read_tx_buffer_start());
-    LOG_INFO_FMT("[ENC28J60] tx end: %04x", enc28j60_read_tx_buffer_end());
-    LOG_INFO_FMT("[ENC28J60] receive filters: %02x", enc28j60_read_receive_filters());
-}
-
 void dump_packet(uint8_t* packet, uint16_t size)
 {
 #ifdef ENABLE_LOGGING
@@ -46,18 +35,15 @@ int main()
 
     timer_init();
 
-#ifdef ENABLE_LOGGING
     uart_init();
     log_uart_init();
     LOG_INFO("Logging initialzed!");
-#endif
 
     spi_init();
     LOG_INFO("SPI initialzed!");
 
     enc28j60_init();
     LOG_INFO("ENC28J60 initialzed!");
-    print_configuration();
 
     uip_init();
     LOG_INFO("uIP initialized!");
@@ -90,7 +76,6 @@ int main()
         {
             LOG_INFO_FMT("[ENC28J60] link status: %d", new_link_status);
             current_link_status = new_link_status;
-            print_configuration();
         }
 
         uint8_t packet_count = enc28j60_rx_packet_count();

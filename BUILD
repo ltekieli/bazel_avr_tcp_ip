@@ -54,7 +54,10 @@ cc_library(
 
 cc_library(
     name = "log",
-    srcs = ["log.c"],
+    srcs = select({
+        ":config_enable_logging": ["log.c"],
+        "//conditions:default": [],
+    }),
     hdrs = ["log.h"],
     defines = select({
         ":config_enable_logging": ["ENABLE_LOGGING=1"],
