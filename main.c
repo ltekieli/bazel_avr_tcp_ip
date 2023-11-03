@@ -4,12 +4,15 @@
 #include "timer.h"
 #include "uart.h"
 
+#include "uip/hello-world.h"
+#include "uip/timer.h"
 #include "uip/uip.h"
 #include "uip/uip_arp.h"
-#include "uip/timer.h"
-#include "uip/hello-world.h"
 
 #include <avr/interrupt.h>
+
+// Interpret the uIP data buffer as ethernet header
+#define BUF ((struct uip_eth_hdr*)&uip_buf[0])
 
 void print_configuration()
 {
@@ -28,14 +31,14 @@ void dump_packet(uint8_t* packet, uint16_t size)
     for (uint16_t i = 0; i < size; ++i)
     {
         printf("%02x ", packet[i]);
-        if ((i + 1) % 16 == 0) {
+        if ((i + 1) % 16 == 0)
+        {
             printf("\r\n");
         }
     }
     printf("\r\n");
 #endif
 }
-
 
 int main()
 {
@@ -67,9 +70,9 @@ int main()
     uip_setethaddr(ethaddr);
 
     uip_ipaddr_t ipaddr;
-    uip_ipaddr(ipaddr, 192,168,0,2);
+    uip_ipaddr(ipaddr, 192, 168, 0, 2);
     uip_sethostaddr(ipaddr);
-    uip_ipaddr(ipaddr, 255,255,255,0);
+    uip_ipaddr(ipaddr, 255, 255, 255, 0);
     uip_setnetmask(ipaddr);
 
     uip_arp_init();
@@ -97,15 +100,15 @@ int main()
             uip_len = enc28j60_rx_packet_receive(uip_buf, UIP_BUFSIZE);
             LOG_INFO_FMT("[ENC28J60] received packet size: %d", uip_len);
             dump_packet(uip_buf, uip_len);
-        } else
+        }
+        else
         {
             uip_len = 0;
         }
 
         if (uip_len > 0)
         {
-            #define BUF ((struct uip_eth_hdr *)&uip_buf[0])
-            if(BUF->type == htons(UIP_ETHTYPE_IP))
+            if (BUF->type == htons(UIP_ETHTYPE_IP))
             {
                 uip_arp_ipin();
                 uip_input();
@@ -118,7 +121,7 @@ int main()
                     enc28j60_tx_packet_send(uip_buf, uip_len);
                 }
             }
-            else if(BUF->type == htons(UIP_ETHTYPE_ARP))
+            else if (BUF->type == htons(UIP_ETHTYPE_ARP))
             {
                 uip_arp_arpin();
                 if (uip_len > 0)
@@ -127,18 +130,17 @@ int main()
                     dump_packet(uip_buf, uip_len);
                     enc28j60_tx_packet_send(uip_buf, uip_len);
                 }
-
             }
         }
 
-        if(timer_expired(&periodic_timer))
+        if (timer_expired(&periodic_timer))
         {
             LOG_INFO("[uIP]: peridic timer expired");
             timer_reset(&periodic_timer);
-            for(int i = 0; i < UIP_CONNS; ++i)
+            for (int i = 0; i < UIP_CONNS; ++i)
             {
                 uip_periodic(i);
-                if(uip_len > 0)
+                if (uip_len > 0)
                 {
                     uip_arp_out();
                     LOG_INFO_FMT("[ENC28J60] sending out packet size: %d", uip_len);
@@ -148,7 +150,7 @@ int main()
             }
         }
 
-        if(timer_expired(&arp_timer))
+        if (timer_expired(&arp_timer))
         {
             LOG_INFO("[uIP]: arp timer expired");
             timer_reset(&arp_timer);

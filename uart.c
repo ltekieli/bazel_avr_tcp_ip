@@ -2,11 +2,11 @@
 
 #include <avr/io.h>
 
+#define BAUD 38400
+#include <util/setbaud.h>
+
 void uart_init()
 {
-    #define BAUD 38400
-    #include <util/setbaud.h>
-
     // Set baud rate
     UBRR1H = UBRRH_VALUE;
     UBRR1L = UBRRL_VALUE;
@@ -32,7 +32,8 @@ int uart_putc(char c, FILE*)
     return 0;
 }
 
-int uart_getc(FILE*) {
+int uart_getc(FILE*)
+{
     // Not implemented
     return 1;
 }

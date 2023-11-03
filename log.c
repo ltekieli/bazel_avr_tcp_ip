@@ -62,4 +62,3 @@ void log_error(const char* s)
 {
     log_error_fmt("%s", s);
 }
-

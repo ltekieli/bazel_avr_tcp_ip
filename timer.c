@@ -3,7 +3,7 @@
 
 static volatile uint32_t system_tick = 0;
 
-ISR (TIMER1_COMPA_vect)
+ISR(TIMER1_COMPA_vect)
 {
     ++system_tick;
 }
@@ -27,7 +27,7 @@ void timer_init()
     TIMSK1 |= (1 << OCIE1A);
 }
 
-uint32_t timer_get_system_tick() {
+uint32_t timer_get_system_tick()
+{
     return system_tick;
 }
-

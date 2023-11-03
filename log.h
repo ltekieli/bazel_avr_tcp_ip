@@ -27,7 +27,10 @@ void log_error(const char* s);
 
 #else
 
-#define LOG_NOOP do {} while (0)
+#define LOG_NOOP                                                                                                       \
+    do                                                                                                                 \
+    {                                                                                                                  \
+    } while (0)
 
 #define LOG_INFO_FMT(fmt, ...) LOG_NOOP
 #define LOG_WARNING_FMT(fmt, ...) LOG_NOOP

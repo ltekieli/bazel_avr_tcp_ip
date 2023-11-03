@@ -2,12 +2,16 @@
 
 #include <avr/io.h>
 
+// clang-format off
+
 #define SPI_DDR  DDRB
 #define SPI_PORT PORTB
 #define CS       PINB0
 #define MOSI     PINB2
 #define MISO     PINB3
 #define SCK      PINB1
+
+// clang-format on
 
 void spi_init()
 {
@@ -40,7 +44,8 @@ uint8_t spi_masterTxRx(uint8_t data)
     SPDR = data;
 
     // Wait for reception complete
-    while(!(SPSR & (1 << SPIF)));
+    while (!(SPSR & (1 << SPIF)))
+        ;
 
     // return Data Register
     return SPDR;

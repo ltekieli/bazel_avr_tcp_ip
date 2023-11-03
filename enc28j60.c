@@ -4,6 +4,8 @@
 
 #include <util/delay.h>
 
+// clang-format off
+
 //
 // SPI operations
 //
@@ -20,7 +22,7 @@
 //
 // Bytes on ENC28J60_REGISTER_TYPE_MASK encodes the SPI operation type needed.
 // For "ETH" register single read happens. For "MAC" and "MII" first
-// read returns a dummy byte, and a second read is needed"
+// read returns a dummy byte, and a second read is needed."
 //
 // Bytes on ENC28J60_BANK_MASK encode the bank for bank selection.
 //
@@ -140,6 +142,8 @@
 #define ENC28J60_PHY_PHIR      0x13
 #define ENC28J60_PHY_PHLCON    0x14
 
+// clang-format on
+
 static uint8_t enc28j60_get_address_from_register(uint8_t reg)
 {
     return reg & ENC28J60_ADDRESS_MASK;
@@ -254,7 +258,8 @@ static uint16_t enc28j60_read_phy_register(uint8_t reg)
 
     _delay_us(11);
 
-    while(enc28j60_read_register(ENC28J60_BANK3_MISTAT) & ENC28J60_BANK3_MISTAT_BUSY);
+    while (enc28j60_read_register(ENC28J60_BANK3_MISTAT) & ENC28J60_BANK3_MISTAT_BUSY)
+        ;
 
     enc28j60_write_register(ENC28J60_BANK2_MICMD, ENC28J60_BANK2_MICMD_MIIRD & 0x00);
 
@@ -274,7 +279,8 @@ static void enc28j60_write_phy_register(uint8_t reg, uint16_t data)
     enc28j60_write_register(ENC28J60_BANK2_MIWRL, datal);
     enc28j60_write_register(ENC28J60_BANK2_MIWRH, datal);
 
-    while(enc28j60_read_register(ENC28J60_BANK3_MISTAT) & ENC28J60_BANK3_MISTAT_BUSY);
+    while (enc28j60_read_register(ENC28J60_BANK3_MISTAT) & ENC28J60_BANK3_MISTAT_BUSY)
+        ;
 }
 
 void enc28j60_soft_reset()
@@ -401,7 +407,8 @@ uint16_t enc28j60_rx_packet_receive(uint8_t* packet, uint16_t max_size)
     {
         // Receive ok
         enc28j60_spi_read_buffer_memory(packet, size);
-    } else
+    }
+    else
     {
         size = 0;
     }
@@ -459,10 +466,12 @@ void enc28j60_init()
     enc28j60_setup_tx_buffer(0x0000, 0x0800);
     enc28j60_setup_rx_buffer(0x0800, 0x1800);
 
-    while(!enc28j60_clock_ready());
+    while (!enc28j60_clock_ready())
+        ;
 
     enc28j60_write_register(ENC28J60_BANK2_MACON1, ENC28J60_BANK2_MACON1_MARXEN);
-    enc28j60_write_register(ENC28J60_BANK2_MACON3, ENC28J60_BANK2_MACON3_PADCFG0 | ENC28J60_BANK2_MACON3_TXCRCEN | ENC28J60_BANK2_MACON3_FRMLNEN);
+    enc28j60_write_register(ENC28J60_BANK2_MACON3, ENC28J60_BANK2_MACON3_PADCFG0 | ENC28J60_BANK2_MACON3_TXCRCEN |
+                                                       ENC28J60_BANK2_MACON3_FRMLNEN);
     enc28j60_write_register(ENC28J60_BANK2_MACON4, ENC28J60_BANK2_MACON4_DEFER);
 
     const uint16_t max_frame_len = 1500;
