@@ -2,6 +2,7 @@ package(default_visibility = ["//visibility:public"])
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//bazel/rules/cc:cc_firmware.bzl", "cc_firmware")
+load("//bazel/rules:run_as_exec.bzl", "run_as_exec")
 
 ##############################################################################
 #
@@ -111,6 +112,11 @@ cc_firmware(
     src = ":ethernet",
 )
 
+##############################################################################
+#
+# Flashing commands
+#
+##############################################################################
 sh_binary(
     name = "program_bootloader",
     srcs = [
@@ -123,4 +129,18 @@ sh_binary(
     tags = [
         "manual",
     ],
+)
+
+run_as_exec(
+    name = "program_application",
+    args = [
+        "-d /dev/ttyUSB0",
+        "-b 230400",
+        "-P Peda",
+        "-p $(location :ethernet_firmware)",
+    ],
+    data = [
+        ":ethernet_firmware",
+    ],
+    executable = "@fboot//:fboot",
 )
