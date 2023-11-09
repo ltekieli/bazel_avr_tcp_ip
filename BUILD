@@ -110,3 +110,17 @@ cc_firmware(
     name = "ethernet_firmware",
     src = ":ethernet",
 )
+
+sh_binary(
+    name = "program_bootloader",
+    srcs = [
+        "scripts/avrdude.sh",
+    ],
+    args = [
+        "-f $(location @fastboot//:fastboot)",
+    ],
+    data = ["@fastboot"],
+    tags = [
+        "manual",
+    ],
+)
