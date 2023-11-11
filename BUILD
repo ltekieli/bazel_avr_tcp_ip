@@ -126,9 +126,6 @@ sh_binary(
         "-f $(location @fastboot//:fastboot)",
     ],
     data = ["@fastboot"],
-    tags = [
-        "manual",
-    ],
 )
 
 run_as_exec(
