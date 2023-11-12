@@ -44,8 +44,7 @@ uint8_t spi_masterTxRx(uint8_t data)
     SPDR = data;
 
     // Wait for reception complete
-    while (!(SPSR & (1 << SPIF)))
-        ;
+    loop_until_bit_is_set(SPSR, SPIF);
 
     // return Data Register
     return SPDR;
