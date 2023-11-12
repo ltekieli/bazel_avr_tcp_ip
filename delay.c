@@ -10,12 +10,3 @@ void delay_ms(int ms)
         --ms;
     }
 }
-
-void delay_us(int us)
-{
-    while (0 < us)
-    {
-        _delay_ms(1);
-        --us;
-    }
-}

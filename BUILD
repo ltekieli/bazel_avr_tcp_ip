@@ -72,7 +72,10 @@ cc_library(
 
 cc_library(
     name = "enc28j60",
-    srcs = ["enc28j60.c"],
+    srcs = [
+        "enc28j60.c",
+        "enc28j60_defines.h",
+    ],
     hdrs = ["enc28j60.h"],
     deps = [
         ":delay",
