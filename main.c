@@ -88,11 +88,6 @@ int main()
         }
         else
         {
-            uip_len = 0;
-        }
-
-        if (uip_len > 0)
-        {
             if (BUF->type == htons(UIP_ETHTYPE_IP))
             {
                 uip_arp_ipin();
