@@ -23,4 +23,4 @@ if [ -z "$firmware" ]; then
     exit 1
 fi
 
-avrdude -p atmega32u4 -P usbasp -c usbasp -U flash:w:"$firmware"
+avrdude -p atmega32u4 -P usb -c usbasp -U flash:w:"$firmware"
