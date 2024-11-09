@@ -1,2 +1,5 @@
-build:platform_build --incompatible_enable_cc_toolchain_resolution
-build:avr --config=platform_build --platforms=//bazel/platforms:avr --features=atmega32u4
+# build:avr --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build:avr --incompatible_enable_cc_toolchain_resolution
+build:avr --incompatible_strict_action_env
+
+build:avr --platforms=@toolchain_avr//bazel/platforms:avr --features=atmega32u4

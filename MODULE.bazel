@@ -1,0 +1,34 @@
+module(
+    name = "avr_tcp_ip",
+    version = "0.1",
+    compatibility_level = 0,
+)
+
+bazel_dep(name = "toolchain_avr")
+archive_override(
+    module_name = "toolchain_avr",
+    integrity = "sha256-oF2DhJIRUUc6bp6VG8yUPHfXv1qMr2YyvaKbCYvggD0=",
+    strip_prefix = "bazel_avr_toolchain-630a683ba2be2827848d1760c01ef1f5387b4c64",
+    urls = [
+        "https://github.com/ltekieli/bazel_avr_toolchain/archive/630a683ba2be2827848d1760c01ef1f5387b4c64.zip",
+    ],
+)
+
+register_toolchains("@toolchain_avr//bazel/toolchain/avr:avr_none_toolchain")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "fastboot",
+    build_file = "//third_party/fastboot:fastboot.BUILD",
+    sha256 = "0b7f6b0f25a3da110af0511c91efebed4d167cca4d87f71fab7caf94ec0af468",
+    urls = ["https://github.com/ltekieli/avr-fastboot/releases/download/2023.11.01/fastboot.tar.gz"],
+)
+
+http_archive(
+    name = "fboot",
+    build_file = "//third_party/fastboot:fboot.BUILD",
+    sha256 = "bbd667e44c2453107227a6a0643090d9c45da0ae1c5ae5efbe543938df4f1165",
+    strip_prefix = "avr-fastboot-2023.11.01/FBoot-Linux/src",
+    urls = ["https://github.com/ltekieli/avr-fastboot/archive/refs/tags/2023.11.01.tar.gz"],
+)
